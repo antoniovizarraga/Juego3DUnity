@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class CameraManager : MonoBehaviour
@@ -17,6 +18,30 @@ public class CameraManager : MonoBehaviour
     {
         var targetPosition = target.position + offset;
         transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref currentVelocity, smoothTime);
+    }
+
+
+
+    [Serializable]
+    public struct MouseSensitivity
+    {
+        public float horizontal;
+        public float vertical;
+        public bool invertHorizontal;
+        public bool invertVertical;
+    }
+
+    public struct CameraRotation
+    {
+        public float Pitch;
+        public float Yaw;
+    }
+
+    [Serializable]
+    public struct CameraAngle
+    {
+        public float min;
+        public float max;
     }
 
 }

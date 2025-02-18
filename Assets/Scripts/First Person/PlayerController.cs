@@ -1,6 +1,7 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Windows;
 
 [RequireComponent(typeof(CharacterController))]
 
@@ -15,27 +16,24 @@ public class PlayerController : MonoBehaviour
     // El controller del personaje que proporciona Unity
     private CharacterController characterController;
 
-    // Variable que representa la dirección del jugador
+    // Variable que representa la direcciï¿½n del jugador
     private Vector3 direction;
 
-    // El tiempo que hay entre cambios de giros del jugador
-    [SerializeField] private float smoothTime = 0.05f;
-
-    // Variable que representa la velocidad actual del jugador
-    private float currentVelocity;
-
-    // Valor que representa la velocidad target o máxima que el jugador puede alcanzar.
+    // Valor que representa la velocidad target o mï¿½xima que el jugador puede alcanzar.
     [SerializeField] private float speed;
 
-    
+    [SerializeField] private float rotationSpeed = 500f;
+    private Camera mainCamera;
+
+
     private float gravity = -9.81f;
 
     [SerializeField] private float gravityMultiplier = 3.0f;
 
-    // Variable que controla la velocidad de la caída del jugador
+    // Variable que controla la velocidad de la caï¿½da del jugador
     private float velocity;
 
-    // Variable que controla cómo de alto podemos saltar
+    // Variable que controla cï¿½mo de alto podemos saltar
     [SerializeField] private float jumpPower;
 
     private int numberOfJumps;
@@ -43,19 +41,20 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    #region Métodos definidos por Unity
-    /* Cada vez que el objeto esté activo en la escena (Es decir, este código se ejecuta una única vez en una escena en la que el objeto
-       al que se le adjunta este script esté activo). */
+    #region Mï¿½todos definidos por Unity
+    /* Cada vez que el objeto estï¿½ activo en la escena (Es decir, este cï¿½digo se ejecuta una ï¿½nica vez en una escena en la que el objeto
+       al que se le adjunta este script estï¿½ activo). */
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
+        mainCamera = Camera.main;
     }
 
     private void Update()
     {
+        
+        ApplyRotation();
         ApplyGravity();
-        // Si queremos que el personaje gire al moverse, quitamos la doble barra. Al ser un juego en primera persona, la cámara y el personaje girará con el ratón.
-        //ApplyRotation();
         ApplyMovement();
 
     }
@@ -63,7 +62,7 @@ public class PlayerController : MonoBehaviour
     #endregion
 
 
-    #region Métodos propios
+    #region Mï¿½todos propios
 
     private void ApplyGravity()
     {
@@ -83,19 +82,20 @@ public class PlayerController : MonoBehaviour
 
     private void ApplyRotation()
     {
-        // Esto lo ponemos para que al girar el jugador se quede en la rotación actual
+        // Esto lo ponemos para que al girar el jugador se quede en la rotaciï¿½n actual
         if (input.sqrMagnitude == 0) return;
 
-        /* Lógica matemática encargada de que la rotación del jugador al moverse sea efectiva */
-        var targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-        var angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref currentVelocity, smoothTime);
-        transform.rotation = Quaternion.Euler(0.0f, angle, 0.0f);
+        /* Lï¿½gica matemï¿½tica encargada de que la rotaciï¿½n del jugador al moverse sea efectiva */
+        direction = Quaternion.Euler(0.0f, mainCamera.transform.eulerAngles.y, 0.0f) * new Vector3(input.x, 0.0f, input.y);
+        var targetRotation = Quaternion.LookRotation(direction, Vector3.up);
+
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
     }
 
     private void ApplyMovement()
     {
-        // Ejecuta el método Move que está asociado en el inspector del objeto.
-        // Lo multiplicamos por Time.deltaTime para que la velocidad a la que se mueva no esté relacionada con el framerate.
+        // Ejecuta el mï¿½todo Move que estï¿½ asociado en el inspector del objeto.
+        // Lo multiplicamos por Time.deltaTime para que la velocidad a la que se mueva no estï¿½ relacionada con el framerate.
         characterController.Move(direction * speed * Time.deltaTime);
     }
 
@@ -104,7 +104,7 @@ public class PlayerController : MonoBehaviour
 
     #region Acciones del jugador
 
-    // La lógica para que el personaje avance.
+    // La lï¿½gica para que el personaje avance.
     public void Move(InputAction.CallbackContext context)
     {
         input = context.ReadValue<Vector2>();
@@ -126,13 +126,13 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
-    #region Métodos privados
+    #region Mï¿½todos privados
 
     private IEnumerator WaitForLanding()
     {
         yield return new WaitUntil(() => !IsGrounded());
         yield return new WaitUntil(IsGrounded);
-        // La línea de arriba es equivalente a:
+        // La lï¿½nea de arriba es equivalente a:
         // while (!IsGrounded()) yield return null
 
         numberOfJumps = 0;
