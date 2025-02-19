@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Windows;
@@ -21,6 +22,8 @@ public class PlayerController : MonoBehaviour
 
     // Valor que representa la velocidad target o m�xima que el jugador puede alcanzar.
     [SerializeField] private float speed;
+
+    [SerializeField] private Movement movement;
 
     [SerializeField] private float rotationSpeed = 500f;
     private Camera mainCamera;
@@ -52,7 +55,6 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        
         ApplyRotation();
         ApplyGravity();
         ApplyMovement();
@@ -94,9 +96,12 @@ public class PlayerController : MonoBehaviour
 
     private void ApplyMovement()
     {
+        var targetSpeed = movement.isSprinting ? movement.speed * movement.multiplier : movement.speed;
+        movement.currentSpeed = Mathf.MoveTowards(movement.currentSpeed, targetSpeed, movement.acceleration * Time.deltaTime);
+
         // Ejecuta el m�todo Move que est� asociado en el inspector del objeto.
         // Lo multiplicamos por Time.deltaTime para que la velocidad a la que se mueva no est� relacionada con el framerate.
-        characterController.Move(direction * speed * Time.deltaTime);
+        characterController.Move(direction * movement.currentSpeed * Time.deltaTime);
     }
 
     #endregion
@@ -124,6 +129,11 @@ public class PlayerController : MonoBehaviour
         velocity = jumpPower / numberOfJumps;
     }
 
+    public void Sprint(InputAction.CallbackContext context)
+    {
+        movement.isSprinting = context.started || context.performed;
+    }
+
     #endregion
 
     #region M�todos privados
@@ -142,4 +152,15 @@ public class PlayerController : MonoBehaviour
     private bool IsGrounded() => characterController.isGrounded;
 
     #endregion
+}
+
+[Serializable]
+public struct Movement
+{
+    public float speed;
+    public float multiplier;
+    public float acceleration;
+
+   [HideInInspector] public bool isSprinting;
+   [HideInInspector] public float currentSpeed;
 }
