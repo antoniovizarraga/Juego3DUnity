@@ -1,6 +1,7 @@
 ﻿
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public class EnemyAI : MonoBehaviour
 {
@@ -70,4 +71,13 @@ public class EnemyAI : MonoBehaviour
         agent.speed = 9.0f;
         agent.SetDestination(player.position);
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            SceneManager.LoadScene("DeathScene");
+        }
+    }
+
 }
