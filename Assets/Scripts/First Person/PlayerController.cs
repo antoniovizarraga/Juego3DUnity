@@ -44,6 +44,10 @@ public class PlayerController : MonoBehaviour
     private int numberOfJumps;
     [SerializeField] private int maxNumberOfJumps;
 
+    private int points;
+
+    public bool secretEnding;
+
     #endregion
 
     #region M�todos definidos por Unity
@@ -104,6 +108,16 @@ public class PlayerController : MonoBehaviour
         // Ejecuta el m�todo Move que est� asociado en el inspector del objeto.
         // Lo multiplicamos por Time.deltaTime para que la velocidad a la que se mueva no est� relacionada con el framerate.
         characterController.Move(direction * movement.currentSpeed * Time.deltaTime);
+    }
+
+    public void AddPoints()
+    {
+        points++;
+
+        if (points >= 10)
+        {
+            secretEnding = true;
+        }
     }
 
     #endregion
